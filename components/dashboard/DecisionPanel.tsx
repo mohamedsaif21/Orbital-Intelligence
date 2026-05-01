@@ -1,133 +1,338 @@
-'use client';
+import { useState } from 'react'
+import { Alert } from './types'
 
-import { useState } from 'react';
-import { X } from 'lucide-react';
+// ── Animated confidence ring ────────────────────────────────────────────────
+function ConfidenceRing({ value }: { value: number }) {
+  const radius = 30
+  const circumference = 2 * Math.PI * radius
+  const filled = (value / 100) * circumference
 
-export default function DecisionPanel() {
-  const [aiLayerOn, setAiLayerOn] = useState(true);
-  const [cadastralOn, setCadastralOn] = useState(false);
+  const color =
+    value >= 90 ? '#0EA5E9' :
+    value >= 70 ? '#F59E0B' : '#EF4444'
+
+  const textColor =
+    value >= 90 ? '#0EA5E9' :
+    value >= 70 ? '#F59E0B' : '#EF4444'
 
   return (
-    <div className="absolute right-0 top-0 bottom-0 w-72 glass border-l border-oi-outline-variant/20 z-20 flex flex-col shadow-2xl p-5">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xs font-bold font-headline tracking-widest uppercase text-white">
-          Decision Support
-        </h2>
-        <button className="text-oi-outline hover:text-white transition-colors">
-          <X size={16} />
+    <div style={{ position: 'relative', width: 76, height: 76, flexShrink: 0 }}>
+      <svg width="76" height="76" style={{ transform: 'rotate(-90deg)' }}>
+        {/* Track */}
+        <circle
+          cx="38" cy="38" r={radius}
+          fill="none" stroke="#1E293B" strokeWidth="5"
+        />
+        {/* Filled arc */}
+        <circle
+          cx="38" cy="38" r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth="5"
+          strokeDasharray={`${filled} ${circumference}`}
+          strokeLinecap="round"
+          style={{ transition: 'stroke-dasharray 0.6s ease, stroke 0.4s ease' }}
+        />
+      </svg>
+      {/* Center text */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+      }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: textColor, lineHeight: 1 }}>
+          {value.toFixed(1)}
+        </span>
+        <span style={{ fontSize: 8, color: '#475569', marginTop: 1 }}>%</span>
+      </div>
+    </div>
+  )
+}
+
+// ── Toggle switch ───────────────────────────────────────────────────────────
+function Toggle({ label, state, onChange }: { label: string; state: boolean; onChange: () => void }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '9px 0', borderBottom: '1px solid #1E293B',
+    }}>
+      <span style={{ fontSize: 10, color: '#64748B', letterSpacing: 0.5 }}>{label}</span>
+      <div
+        onClick={onChange}
+        style={{
+          width: 36, height: 20, borderRadius: 10, cursor: 'pointer',
+          background: state ? '#0EA5E9' : '#1E293B',
+          position: 'relative', transition: 'background 0.25s',
+          border: `1px solid ${state ? '#0EA5E9' : '#334155'}`,
+          flexShrink: 0,
+        }}
+      >
+        <div style={{
+          width: 14, height: 14, borderRadius: '50%',
+          background: state ? '#fff' : '#475569',
+          position: 'absolute', top: 2,
+          left: state ? 18 : 2,
+          transition: 'left 0.25s, background 0.25s',
+        }} />
+      </div>
+    </div>
+  )
+}
+
+// ── Data field ─────────────────────────────────────────────────────────────
+function DataField({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div style={{
+      background: '#0F172A', border: '1px solid #1E293B',
+      borderRadius: 4, padding: '8px 12px',
+    }}>
+      <div style={{ fontSize: 9, color: '#475569', marginBottom: 3, letterSpacing: 0.5 }}>
+        {label}
+      </div>
+      <div style={{
+        fontSize: 12, fontWeight: accent ? 700 : 400,
+        color: accent ? '#E2E8F0' : '#94A3B8',
+      }}>
+        {value}
+      </div>
+    </div>
+  )
+}
+
+// ── Action button ──────────────────────────────────────────────────────────
+function ActionButton({
+  label,
+  variant = 'ghost',
+  onClick,
+}: {
+  label: string
+  variant?: 'primary' | 'ghost' | 'outline'
+  onClick?: () => void
+}) {
+  const [hover, setHover] = useState(false)
+
+  const styles: Record<string, React.CSSProperties> = {
+    primary: {
+      background: hover ? '#38BDF8' : '#0EA5E9',
+      border: 'none',
+      color: '#fff',
+    },
+    ghost: {
+      background: hover ? '#1E293B' : 'transparent',
+      border: '1px solid #1E293B',
+      color: hover ? '#E2E8F0' : '#64748B',
+    },
+    outline: {
+      background: 'transparent',
+      border: '1px solid #0EA5E9',
+      color: '#0EA5E9',
+    },
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        width: '100%', padding: '10px 0',
+        borderRadius: 4, cursor: 'pointer',
+        fontSize: 11, fontWeight: 700, letterSpacing: 1,
+        fontFamily: 'inherit', transition: 'all 0.2s',
+        ...styles[variant],
+      }}
+    >
+      {label}
+    </button>
+  )
+}
+
+// ── Main DecisionPanel ─────────────────────────────────────────────────────
+interface Props {
+  alert?: Alert | null
+  onClose?: () => void
+}
+
+export default function DecisionPanel({ alert, onClose = () => {} }: Props) {
+  const [aiLayer,   setAiLayer]   = useState(true)
+  const [cadastral, setCadastral] = useState(false)
+  const [status, setStatus]       = useState<'idle' | 'verified' | 'dismissed'>('idle')
+
+  if (!alert) {
+    return (
+      <div style={{
+        width: 280,
+        background: '#0D1117',
+        borderLeft: '1px solid #1E293B',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        color: '#475569',
+        fontSize: 11,
+        textAlign: 'center',
+        padding: 20,
+      }}>
+        Select an alert to view details
+      </div>
+    )
+  }
+
+  const isPositiveShift = alert.landCover?.startsWith('+') ?? false
+  const confidence = alert.confidence ?? 75
+  const landCoverText = alert.landCover ? `${alert.landCover}%` : 'N/A'
+
+  const confidenceText =
+    confidence >= 90
+      ? 'High confidence detection of non-permitted structural expansion.'
+      : confidence >= 70
+      ? 'Medium confidence. Manual field verification recommended.'
+      : 'Low confidence. Possible false positive — review imagery.'
+
+  function handleVerify() {
+    setStatus('verified')
+  }
+
+  function handleDismiss() {
+    setStatus('dismissed')
+  }
+
+  return (
+    <div style={{
+      width: 280,
+      background: '#0D1117',
+      borderLeft: '1px solid #1E293B',
+      display: 'flex',
+      flexDirection: 'column',
+      flexShrink: 0,
+      overflow: 'hidden',
+    }}>
+      {/* Header */}
+      <div style={{
+        padding: '10px 14px',
+        borderBottom: '1px solid #1E293B',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexShrink: 0,
+      }}>
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, color: '#E2E8F0' }}>
+            DECISION SUPPORT
+          </div>
+          <div style={{ fontSize: 9, color: '#334155', marginTop: 2, letterSpacing: 0.5 }}>
+            {alert.code}
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          style={{
+            background: 'none', border: 'none',
+            color: '#334155', cursor: 'pointer', fontSize: 14,
+            padding: 4, borderRadius: 3,
+            transition: 'color 0.15s',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#E2E8F0')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#334155')}
+        >
+          ✕
         </button>
       </div>
 
-      <div className="space-y-5 flex-1 overflow-y-auto no-scrollbar">
-        {/* Target Data */}
-        <div>
-          <p className="text-[10px] text-oi-outline uppercase tracking-widest font-body mb-2">
-            Target Data
-          </p>
-          <div className="bg-oi-surface-lowest p-3 rounded border border-oi-outline-variant/10">
-            <div className="flex justify-between mb-1">
-              <span className="text-[10px] text-oi-outline font-headline">GPS LAT</span>
-              <span className="text-[10px] text-white font-headline">34.0522° N</span>
+      {/* Scrollable content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px' }}>
+
+        {/* Status banner if action taken */}
+        {status !== 'idle' && (
+          <div style={{
+            padding: '8px 10px', borderRadius: 4, marginBottom: 12,
+            background: status === 'verified' ? '#14532D' : '#1C1917',
+            border: `1px solid ${status === 'verified' ? '#16A34A' : '#44403C'}`,
+            fontSize: 10, color: status === 'verified' ? '#86EFAC' : '#A8A29E',
+            fontWeight: 700, letterSpacing: 0.5,
+          }}>
+            {status === 'verified' ? '✓ CASE VERIFIED — FORWARDED TO AUTHORITY' : '✕ MARKED AS FALSE POSITIVE'}
+          </div>
+        )}
+
+        {/* Target data */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 9, letterSpacing: 1, color: '#334155', marginBottom: 8 }}>
+            TARGET DATA
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 6 }}>
+            <DataField label="GPS LAT"  value={alert.gpsLat || 'N/A'} />
+            <DataField label="GPS LONG" value={alert.gpsLon || 'N/A'} />
+          </div>
+          <div style={{
+            background: '#0F172A', border: '1px solid #1E293B',
+            borderRadius: 4, padding: '8px 12px',
+          }}>
+            <div style={{ fontSize: 9, color: '#475569', marginBottom: 4, letterSpacing: 0.5 }}>
+              LAND COVER SHIFT
             </div>
-            <div className="flex justify-between mb-3">
-              <span className="text-[10px] text-oi-outline font-headline">GPS LONG</span>
-              <span className="text-[10px] text-white font-headline">118.2437° W</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-oi-cyan font-headline font-bold text-lg">+12.4%</span>
-              <span className="text-[10px] text-oi-outline uppercase font-body">
-                Land Cover Shift
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <span style={{
+                fontSize: 22, fontWeight: 700,
+                color: isPositiveShift ? '#EF4444' : '#22C55E',
+              }}>
+                {landCoverText}
+              </span>
+              <span style={{ fontSize: 10, color: '#475569' }}>
+                {isPositiveShift ? '▲ expansion' : '▼ reduction'}
               </span>
             </div>
           </div>
         </div>
 
-        {/* AI Confidence */}
-        <div>
-          <p className="text-[10px] text-oi-outline uppercase tracking-widest font-body mb-2">
-            AI Confidence Score
-          </p>
-          <div className="flex items-center gap-4">
-            <div className="relative w-14 h-14 flex-shrink-0">
-              <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                <path
-                  className="text-oi-outline-variant"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="transparent"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                />
-                <path
-                  className="text-oi-cyan"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="transparent"
-                  stroke="currentColor"
-                  strokeDasharray="98.4, 100"
-                  strokeLinecap="round"
-                  strokeWidth="2"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center text-[9px] font-bold font-headline text-white">
-                98.4%
-              </div>
-            </div>
-            <p className="text-[10px] text-oi-on-surface leading-tight">
-              High confidence detection of non-permitted structural expansion.
+        {/* Confidence score */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 9, letterSpacing: 1, color: '#334155', marginBottom: 8 }}>
+            AI CONFIDENCE SCORE
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <ConfidenceRing value={confidence} />
+            <p style={{
+              fontSize: 11, color: '#64748B',
+              lineHeight: 1.55, margin: 0,
+            }}>
+              {confidenceText}
             </p>
           </div>
         </div>
 
-        {/* Toggle Controls */}
-        <div className="pt-4 space-y-3 border-t border-oi-outline-variant/10">
-          <div className="flex justify-between items-center">
-            <span className="text-[10px] font-headline text-white uppercase tracking-widest">
-              AI Prediction Layer
-            </span>
-            <button
-              onClick={() => setAiLayerOn(!aiLayerOn)}
-              className={`w-10 h-5 rounded-full relative transition-colors ${
-                aiLayerOn ? 'bg-oi-cyan' : 'bg-oi-outline-variant'
-              }`}
-            >
-              <div
-                className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${
-                  aiLayerOn ? 'right-1' : 'left-1'
-                }`}
-              />
-            </button>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-[10px] font-headline text-oi-outline uppercase tracking-widest">
-              Cadastral Overlays
-            </span>
-            <button
-              onClick={() => setCadastralOn(!cadastralOn)}
-              className={`w-10 h-5 rounded-full relative transition-colors ${
-                cadastralOn ? 'bg-oi-cyan' : 'bg-oi-outline-variant'
-              }`}
-            >
-              <div
-                className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${
-                  cadastralOn ? 'right-1' : 'left-1'
-                }`}
-              />
-            </button>
-          </div>
+        {/* Toggles */}
+        <div style={{ marginBottom: 14 }}>
+          <Toggle
+            label="AI PREDICTION LAYER"
+            state={aiLayer}
+            onChange={() => setAiLayer(!aiLayer)}
+          />
+          <Toggle
+            label="CADASTRAL OVERLAYS"
+            state={cadastral}
+            onChange={() => setCadastral(!cadastral)}
+          />
+        </div>
+
+        {/* Action buttons */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <ActionButton
+            label="VERIFY CASE"
+            variant="primary"
+            onClick={handleVerify}
+          />
+          <ActionButton
+            label="MARK AS FALSE POSITIVE"
+            variant="ghost"
+            onClick={handleDismiss}
+          />
+          <ActionButton
+            label="SEND NOTICE"
+            variant="ghost"
+          />
         </div>
       </div>
-
-      {/* Action Buttons */}
-      <div className="pt-4 space-y-2 border-t border-oi-outline-variant/10 mt-4">
-        <button className="w-full py-2.5 bg-oi-cyan text-oi-on-cyan font-headline text-[10px] font-bold tracking-widest uppercase rounded hover:shadow-[0_0_15px_rgba(0,229,255,0.4)] transition-all">
-          VERIFY CASE
-        </button>
-        <button className="w-full py-2.5 border border-oi-outline-variant text-oi-cyan font-headline text-[10px] font-bold tracking-widest uppercase rounded hover:bg-white/5 transition-colors">
-          MARK AS FALSE POSITIVE
-        </button>
-        <button className="w-full py-2.5 bg-oi-surface-highest text-oi-on-surface font-headline text-[10px] font-bold tracking-widest uppercase rounded hover:bg-oi-surface-bright transition-colors">
-          SEND NOTICE
-        </button>
-      </div>
     </div>
-  );
+  )
 }

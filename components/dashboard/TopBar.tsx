@@ -1,61 +1,59 @@
-'use client';
+'use client'
+const TABS = ['TELEMETRY', 'ASSETS', 'REPORTS', 'SETTINGS']
 
-import { Search, Bell, CircleUser as UserCircle } from 'lucide-react';
-
-export default function TopBar() {
+export default function TopBar({ active, setActive }: { active: string; setActive: (t: string) => void }) {
   return (
-    <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-oi-bg border-b border-oi-surface">
-      <div className="flex items-center gap-8">
-        <span className="text-xl font-bold tracking-tighter text-oi-cyan font-headline">
-          ORBITAL INTELLIGENCE
-        </span>
-        <nav className="hidden md:flex items-center gap-6">
-          <a
-            href="#"
-            className="font-headline tracking-tight text-sm uppercase text-oi-cyan border-b-2 border-oi-cyan pb-1"
-          >
-            Telemetry
-          </a>
-          <a
-            href="#"
-            className="font-headline tracking-tight text-sm uppercase text-slate-400 hover:text-white transition-colors"
-          >
-            Assets
-          </a>
-          <a
-            href="#"
-            className="font-headline tracking-tight text-sm uppercase text-slate-400 hover:text-white transition-colors"
-          >
-            Reports
-          </a>
-          <a
-            href="#"
-            className="font-headline tracking-tight text-sm uppercase text-slate-400 hover:text-white transition-colors"
-          >
-            Settings
-          </a>
-        </nav>
+    <header style={{
+      height: 52, background: '#0D1117', borderBottom: '1px solid #1E293B',
+      display: 'flex', alignItems: 'center', flexShrink: 0, paddingLeft: 0,
+    }}>
+      {/* Logo */}
+      <div style={{
+        width: 220, height: '100%', display: 'flex', alignItems: 'center',
+        padding: '0 20px', borderRight: '1px solid #1E293B', flexShrink: 0,
+      }}>
+        <div style={{ width: 28, height: 28, background: '#0EA5E9', borderRadius: 6,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#fff', fontWeight: 700, fontSize: 14, marginRight: 10 }}>O</div>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#E2E8F0', letterSpacing: 2 }}>ORBITAL</div>
+          <div style={{ fontSize: 9, color: '#475569', letterSpacing: 2 }}>INTELLIGENCE</div>
+        </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative hidden lg:block">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-oi-outline"
-          />
-          <input
-            type="text"
-            placeholder="SEARCH SATELLITE ID..."
-            className="bg-oi-surface-lowest border border-oi-outline-variant/30 text-oi-on-surface text-xs font-headline tracking-widest pl-9 pr-4 py-2 w-64 rounded focus:outline-none focus:ring-1 focus:ring-oi-cyan/50 placeholder:text-oi-outline"
-          />
-        </div>
-        <button className="text-slate-400 hover:text-white transition-all active:scale-95">
-          <Bell size={20} />
-        </button>
-        <button className="text-slate-400 hover:text-white transition-all active:scale-95">
-          <UserCircle size={22} />
-        </button>
+      {/* Tabs */}
+      <div style={{ display: 'flex', height: '100%' }}>
+        {TABS.map(tab => (
+          <button key={tab} onClick={() => setActive(tab)} style={{
+            padding: '0 22px', height: '100%', border: 'none', cursor: 'pointer',
+            background: active === tab ? '#1E293B' : 'transparent',
+            borderBottom: active === tab ? '2px solid #0EA5E9' : '2px solid transparent',
+            color: active === tab ? '#E2E8F0' : '#475569',
+            fontSize: 11, fontWeight: 700, letterSpacing: 1, fontFamily: 'inherit',
+          }}>{tab}</button>
+        ))}
       </div>
+
+      <div style={{ flex: 1 }} />
+
+      {/* Search */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        border: '1px solid #1E293B', borderRadius: 4,
+        padding: '0 12px', height: 30, marginRight: 12,
+      }}>
+        <span style={{ fontSize: 12, color: '#334155' }}>🔍</span>
+        <span style={{ fontSize: 11, color: '#334155' }}>SEARCH SATELLITE ID...</span>
+      </div>
+
+      {/* Icons */}
+      {['🔔', '👤'].map((icon, i) => (
+        <div key={i} style={{
+          width: 32, height: 32, background: '#1E293B', borderRadius: 4,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          marginRight: i === 0 ? 6 : 16, cursor: 'pointer', fontSize: 13,
+        }}>{icon}</div>
+      ))}
     </header>
-  );
+  )
 }

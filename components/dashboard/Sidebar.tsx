@@ -1,80 +1,64 @@
-'use client';
+'use client'
+const NAV = [
+  { id: 'dashboard', label: 'DASHBOARD',   icon: '⊞' },
+  { id: 'maplayers', label: 'MAP LAYERS',  icon: '◈' },
+  { id: 'alertlog',  label: 'ALERT LOG',   icon: '⚠' },
+  { id: 'analytics', label: 'ANALYTICS',   icon: '⩬' },
+  { id: 'archived',  label: 'ARCHIVED',    icon: '◫' },
+]
 
-import {
-  LayoutDashboard,
-  Layers,
-  TriangleAlert,
-  TrendingUp,
-  History,
-  HelpCircle,
-  LogOut,
-  Satellite,
-} from 'lucide-react';
-
-const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', active: true },
-  { icon: Layers, label: 'Map Layers', active: false },
-  { icon: TriangleAlert, label: 'Alert Log', active: false },
-  { icon: TrendingUp, label: 'Analytics', active: false },
-  { icon: History, label: 'Archived', active: false },
-];
-
-export default function Sidebar() {
+export default function Sidebar({ active, setActive }: { active: string; setActive: (s: string) => void }) {
   return (
-    <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] z-40 flex flex-col pt-4 bg-oi-bg w-64 border-r border-oi-surface-high/40">
-      <div className="px-6 mb-8">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-oi-surface-highest rounded flex items-center justify-center">
-            <Satellite size={20} className="text-oi-cyan" />
-          </div>
+    <aside style={{
+      width: 220, background: '#0D1117', borderRight: '1px solid #1E293B',
+      display: 'flex', flexDirection: 'column', flexShrink: 0, height: '100%',
+    }}>
+      {/* Sentinel badge */}
+      <div style={{ padding: '14px 20px', borderBottom: '1px solid #1E293B' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{
+            width: 30, height: 30, background: '#1E293B', borderRadius: 4,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
+          }}>🛰</div>
           <div>
-            <div className="text-base font-black text-white font-headline">SENTINEL-1</div>
-            <div className="text-[10px] text-oi-cyan font-headline tracking-widest uppercase">
-              Active Monitoring
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#E2E8F0' }}>SENTINEL-1</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E',
+                boxShadow: '0 0 5px #22C55E' }} />
+              <span style={{ fontSize: 9, color: '#22C55E', letterSpacing: 1 }}>ACTIVE MONITORING</span>
             </div>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 flex flex-col px-3 gap-1">
-        {navItems.map(({ icon: Icon, label, active }) => (
-          <a
-            key={label}
-            href="#"
-            className={`flex items-center gap-3 px-3 py-3 rounded-lg font-headline text-xs font-medium uppercase tracking-widest transition-all duration-200 ${
-              active
-                ? 'bg-oi-cyan/10 text-oi-cyan border-r-2 border-oi-cyan'
-                : 'text-slate-500 hover:bg-oi-surface-low hover:text-white'
-            }`}
-          >
-            <Icon size={18} />
-            {label}
-          </a>
-        ))}
-
-        <div className="mt-6 px-3">
-          <button className="w-full py-3 bg-oi-cyan text-oi-on-cyan font-headline text-xs font-bold tracking-widest uppercase rounded hover:opacity-90 transition-opacity">
-            NEW REPORT
+      {/* Nav */}
+      <nav style={{ flex: 1, paddingTop: 8 }}>
+        {NAV.map(item => (
+          <button key={item.id} onClick={() => setActive(item.id)} style={{
+            width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+            padding: '10px 20px', border: 'none', cursor: 'pointer',
+            background: active === item.id ? '#1E293B' : 'transparent',
+            borderLeft: active === item.id ? '2px solid #0EA5E9' : '2px solid transparent',
+            color: active === item.id ? '#E2E8F0' : '#475569',
+            fontSize: 11, fontWeight: 700, letterSpacing: 1, fontFamily: 'inherit',
+            transition: 'all 0.15s',
+          }}>
+            <span style={{ fontSize: 15 }}>{item.icon}</span>
+            {item.label}
           </button>
-        </div>
+        ))}
       </nav>
 
-      <div className="mt-auto p-4 flex flex-col gap-1 border-t border-oi-surface-high/40">
-        <a
-          href="#"
-          className="flex items-center gap-3 px-3 py-2 text-slate-500 hover:text-white font-headline text-[10px] uppercase tracking-widest transition-colors"
-        >
-          <HelpCircle size={14} />
-          Support
-        </a>
-        <a
-          href="#"
-          className="flex items-center gap-3 px-3 py-2 text-slate-500 hover:text-white font-headline text-[10px] uppercase tracking-widest transition-colors"
-        >
-          <LogOut size={14} />
-          Logout
-        </a>
+      {/* Bottom */}
+      <div style={{ padding: '14px 16px', borderTop: '1px solid #1E293B' }}>
+        <button style={{
+          width: '100%', padding: '10px 0', background: '#0EA5E9', border: 'none',
+          borderRadius: 4, color: '#fff', fontSize: 11, fontWeight: 700,
+          letterSpacing: 1, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 16,
+        }}>+ NEW REPORT</button>
+        <div style={{ fontSize: 10, color: '#334155', marginBottom: 8 }}>⚙ SUPPORT</div>
+        <div style={{ fontSize: 10, color: '#334155' }}>→ LOGOUT</div>
       </div>
     </aside>
-  );
+  )
 }

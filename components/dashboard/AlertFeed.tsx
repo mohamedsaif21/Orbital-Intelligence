@@ -1,132 +1,229 @@
-interface AlertItem {
-  id: string;
-  status: 'critical' | 'review' | 'cleared';
-  title: string;
-  subtitle: string;
-  time: string;
-  imageUrl: string;
-}
+'use client'
 
-const alerts: AlertItem[] = [
+import { Alert, SEVERITY_CONFIG } from './types'
+
+// ── Mock alerts data ────────────────────────────────────────────────────────
+const MOCK_ALERTS: Alert[] = [
   {
-    id: '1',
-    status: 'critical',
-    title: 'Parcel #882-NORTH',
-    subtitle: 'Lat: 34.052, Long: -118.243',
-    time: '2m ago',
-    imageUrl:
-      'https://images.pexels.com/photos/1374510/pexels-photo-1374510.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&fit=crop',
-  },
-  {
-    id: '2',
-    status: 'review',
-    title: 'Zone-DELTA / Sector 4',
-    subtitle: 'Vegetation index drop detected',
-    time: '14m ago',
-    imageUrl:
-      'https://images.pexels.com/photos/1486974/pexels-photo-1486974.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&fit=crop',
+    id: 1,
+    severity: 'CRITICAL',
+    code: 'ENCROACHMENT-042',
+    zone: 'Sector 7, Plot 42',
+    time: '14:32',
+    img: '🏗️',
+    lat: 11.2588,
+    lon: 78.6588,
+    gpsLat: '11.2588° N',
+    gpsLon: '78.6588° E',
+    landCover: '+18',
+    confidence: 94,
   },
   {
-    id: '3',
-    status: 'cleared',
-    title: 'Plot #114-ALPHA',
-    subtitle: 'Routine maintenance verified',
-    time: '1h ago',
-    imageUrl:
-      'https://images.pexels.com/photos/440731/pexels-photo-440731.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&fit=crop',
+    id: 2,
+    severity: 'WARNING',
+    code: 'ILLEGAL-LAND-USE-19',
+    zone: 'Zone B, Grid 19',
+    time: '09:15',
+    img: '🌾',
+    lat: 11.1524,
+    lon: 78.7041,
+    gpsLat: '11.1524° N',
+    gpsLon: '78.7041° E',
+    landCover: '+8',
+    confidence: 72,
   },
-];
+  {
+    id: 3,
+    severity: 'INFO',
+    code: 'DISPUTE-RESOLVED-88',
+    zone: 'Northern Territory, Lot 88',
+    time: '16:45',
+    img: '✅',
+    lat: 11.3204,
+    lon: 78.5592,
+    gpsLat: '11.3204° N',
+    gpsLon: '78.5592° E',
+    landCover: '-12',
+    confidence: 88,
+  },
+]
 
-const statusConfig = {
-  critical: {
-    label: 'BREACH: CRITICAL',
-    badgeBg: 'bg-oi-error-container',
-    badgeText: 'text-oi-on-error-container',
-    border: 'border-oi-error',
-    shadow: 'shadow-[0_0_20px_rgba(147,0,10,0.15)]',
-  },
-  review: {
-    label: 'UNDER REVIEW',
-    badgeBg: 'bg-oi-tertiary-container',
-    badgeText: 'text-oi-on-tertiary-container',
-    border: 'border-oi-on-tertiary-container',
-    shadow: '',
-  },
-  cleared: {
-    label: 'CLEARED',
-    badgeBg: 'bg-oi-secondary-container',
-    badgeText: 'text-oi-secondary',
-    border: 'border-oi-secondary-container',
-    shadow: '',
-  },
-};
+// ── Trend bar chart ─────────────────────────────────────────────────────────
+const TREND = [3, 5, 4, 8, 6, 11, 9, 14, 10, 8, 12, 15, 13, 7]
 
-const trendHeights = ['h-1/4', 'h-2/4', 'h-full', 'h-3/4', 'h-2/4', 'h-4/5', 'h-1/3'];
-const trendOpacities = [
-  'bg-oi-cyan/20',
-  'bg-oi-cyan/20',
-  'bg-oi-cyan',
-  'bg-oi-cyan/60',
-  'bg-oi-cyan/40',
-  'bg-oi-cyan',
-  'bg-oi-cyan/20',
-];
-
-export default function AlertFeed() {
+function TrendChart() {
+  const max = Math.max(...TREND)
   return (
-    <div className="col-span-12 lg:col-span-4 xl:col-span-3 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-bold font-headline tracking-widest uppercase flex items-center gap-2 text-oi-on-surface">
-          <span className="w-2 h-2 rounded-full bg-oi-error animate-pulse inline-block" />
-          Live Alert Feed
-        </h2>
-        <span className="text-[10px] font-headline text-oi-outline-variant">AUTO-REFRESH: 5S</span>
+    <div style={{ padding: '12px 16px', borderTop: '1px solid #1E293B' }}>
+      <div style={{
+        fontSize: 9, letterSpacing: 1, color: '#475569',
+        marginBottom: 8, display: 'flex', justifyContent: 'space-between',
+      }}>
+        <span>ENCROACHMENTS TREND (7D)</span>
+        <span style={{ color: '#0EA5E9' }}>↑ 8.3%</span>
       </div>
-
-      <div className="flex-1 overflow-y-auto no-scrollbar space-y-3">
-        {alerts.map((alert) => {
-          const cfg = statusConfig[alert.status];
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 52 }}>
+        {TREND.map((v, i) => {
+          const isLast = i === TREND.length - 1
+          const height = Math.round((v / max) * 100)
           return (
             <div
-              key={alert.id}
-              className={`group relative bg-oi-surface hover:bg-oi-surface-high transition-all cursor-pointer p-3 rounded-lg border-l-4 ${cfg.border} ${cfg.shadow}`}
-            >
-              <div className="flex gap-3">
-                <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0">
-                  <img
-                    src={alert.imageUrl}
-                    alt={alert.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start mb-1">
-                    <span
-                      className={`px-1.5 py-0.5 ${cfg.badgeBg} ${cfg.badgeText} text-[8px] font-bold uppercase rounded tracking-tighter`}
-                    >
-                      {cfg.label}
-                    </span>
-                    <span className="text-[9px] text-oi-outline">{alert.time}</span>
-                  </div>
-                  <h4 className="text-xs font-bold text-oi-on-surface truncate">{alert.title}</h4>
-                  <p className="text-[10px] text-oi-outline truncate">{alert.subtitle}</p>
-                </div>
-              </div>
-            </div>
-          );
+              key={i}
+              style={{
+                flex: 1,
+                height: `${height}%`,
+                background: isLast ? '#0EA5E9' : '#1E4976',
+                borderRadius: '2px 2px 0 0',
+                transition: 'background 0.2s',
+              }}
+            />
+          )
         })}
+      </div>
+    </div>
+  )
+}
 
-        <div className="bg-oi-surface-low p-4 rounded-lg mt-4">
-          <p className="text-[10px] text-oi-outline uppercase tracking-widest font-body mb-3">
-            Encroachments Trend (7d)
-          </p>
-          <div className="h-16 w-full flex items-end gap-1 px-1">
-            {trendHeights.map((h, i) => (
-              <div key={i} className={`w-full ${trendOpacities[i]} ${h} rounded-t-sm`} />
-            ))}
+// ── Alert row ───────────────────────────────────────────────────────────────
+function AlertRow({
+  alert,
+  isSelected,
+  onClick,
+}: {
+  alert: Alert
+  isSelected: boolean
+  onClick: () => void
+}) {
+  const sev = SEVERITY_CONFIG[alert.severity]
+
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        padding: '10px 16px',
+        borderBottom: '1px solid #1E293B',
+        cursor: 'pointer',
+        background: isSelected ? '#1E293B' : 'transparent',
+        borderLeft: isSelected ? '2px solid #0EA5E9' : '2px solid transparent',
+        transition: 'all 0.15s',
+      }}
+    >
+      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+        {/* Thumbnail */}
+        <div style={{
+          width: 52, height: 42, borderRadius: 4,
+          overflow: 'hidden', background: '#0F172A', flexShrink: 0,
+          border: `1px solid ${isSelected ? '#0EA5E9' : '#1E293B'}`,
+        }}>
+          <div style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 20,
+            opacity: 0.95,
+          }}>
+            {alert.img}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{
+              fontSize: 9, padding: '2px 6px', borderRadius: 2,
+              background: sev.bg, color: sev.text,
+              fontWeight: 700, letterSpacing: 0.5,
+            }}>
+              {sev.label}
+            </span>
+            <span style={{ fontSize: 9, color: '#334155' }}>{alert.time}</span>
+          </div>
+          <div style={{
+            fontSize: 11, fontWeight: 700, color: '#E2E8F0',
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            marginBottom: 2,
+          }}>
+            {alert.code}
+          </div>
+          <div style={{
+            fontSize: 10, color: '#475569',
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            {alert.zone}
           </div>
         </div>
       </div>
     </div>
-  );
+  )
+}
+
+// ── Main AlertFeed ──────────────────────────────────────────────────────────
+interface Props {
+  alerts?: Alert[]
+  selected?: Alert | null
+  onSelect?: (a: Alert) => void
+  countdown?: number
+}
+
+export default function AlertFeed({ 
+  alerts = MOCK_ALERTS, 
+  selected = null, 
+  onSelect = () => {}, 
+  countdown = 5 
+}: Props) {
+  return (
+    <div style={{
+      width: 280,
+      background: '#0D1117',
+      borderRight: '1px solid #1E293B',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      flexShrink: 0,
+    }}>
+      {/* Header */}
+      <div style={{
+        padding: '10px 16px',
+        borderBottom: '1px solid #1E293B',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexShrink: 0,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{
+            width: 6, height: 6, borderRadius: '50%',
+            background: '#EF4444',
+            boxShadow: '0 0 6px #EF4444',
+          }} />
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: '#E2E8F0' }}>
+            LIVE ALERT FEED
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22C55E' }} />
+          <span style={{ fontSize: 9, color: '#475569', letterSpacing: 0.5 }}>
+            AUTO-REFRESH: {countdown}s
+          </span>
+        </div>
+      </div>
+
+      {/* Alert list */}
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        {alerts.map((alert) => (
+          <AlertRow
+            key={alert.id}
+            alert={alert}
+            isSelected={selected?.id === alert.id}
+            onClick={() => onSelect(alert)}
+          />
+        ))}
+      </div>
+
+      {/* Trend chart */}
+      <TrendChart />
+    </div>
+  )
 }
