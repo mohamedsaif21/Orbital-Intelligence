@@ -1,0 +1,10 @@
+{
+  "version": "0.2",
+  "ignorePaths": ["node_modules", ".git", "venv", "*.lock"],
+  "words": [
+    "ndvi", "fastapi", "uvicorn", "rasterio", "numpy", "geopandas",
+    "psycopg", "dotenv", "scipy", "ndimage", "geospatial", "shapely",
+    "pyproj", "normalise", "summarise", "orbita", "unauthorised",
+    "multipart", "pydantic", "sqlalchemy"
+  ]
+}

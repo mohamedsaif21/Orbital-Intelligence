@@ -1,6 +1,7 @@
 'use client'
 const NAV = [
   { id: 'dashboard', label: 'DASHBOARD',   icon: '⊞' },
+  { id: 'detection', label: 'DETECTION',    icon: '⊕' },
   { id: 'maplayers', label: 'MAP LAYERS',  icon: '◈' },
   { id: 'alertlog',  label: 'ALERT LOG',   icon: '⚠' },
   { id: 'analytics', label: 'ANALYTICS',   icon: '⩬' },

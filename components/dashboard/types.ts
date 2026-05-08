@@ -1,6 +1,27 @@
 // Types for dashboard components
 
-export type AlertSeverity = 'CRITICAL' | 'WARNING' | 'INFO'
+export type AlertSeverity =
+  | 'CRITICAL'
+  | 'WARNING'
+  | 'INFO'
+  | 'breach-critical'
+  | 'under-review'
+  | 'cleared'
+
+export type SeverityKey = 'CRITICAL' | 'WARNING' | 'INFO'
+
+export function normalizeSeverity(severity: AlertSeverity): SeverityKey {
+  switch (severity) {
+    case 'breach-critical':
+      return 'CRITICAL'
+    case 'under-review':
+      return 'WARNING'
+    case 'cleared':
+      return 'INFO'
+    default:
+      return severity
+  }
+}
 
 export interface Alert {
   id: number
@@ -9,6 +30,7 @@ export interface Alert {
   zone: string
   time: string
   img: string
+  desc?: string
   lat?: number
   lon?: number
   gpsLat?: string
@@ -17,7 +39,7 @@ export interface Alert {
   confidence?: number
 }
 
-export const SEVERITY_CONFIG: Record<AlertSeverity, {
+export const SEVERITY_CONFIG: Record<SeverityKey, {
   label: string
   bg: string
   text: string

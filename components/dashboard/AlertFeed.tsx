@@ -1,6 +1,6 @@
 'use client'
 
-import { Alert, SEVERITY_CONFIG } from './types'
+import { Alert, SEVERITY_CONFIG, normalizeSeverity } from './types'
 
 // ── Mock alerts data ────────────────────────────────────────────────────────
 const MOCK_ALERTS: Alert[] = [
@@ -94,7 +94,7 @@ function AlertRow({
   isSelected: boolean
   onClick: () => void
 }) {
-  const sev = SEVERITY_CONFIG[alert.severity]
+  const sev = SEVERITY_CONFIG[normalizeSeverity(alert.severity)] ?? SEVERITY_CONFIG.INFO
 
   return (
     <div

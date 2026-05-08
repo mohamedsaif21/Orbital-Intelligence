@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { Alert, SEVERITY_CONFIG } from './types'
+import { Alert, SEVERITY_CONFIG, normalizeSeverity } from './types'
 
 const MOCK_ALERTS: Alert[] = [
   {
@@ -222,7 +222,7 @@ function GisMapContent({
         alerts.forEach((alert) => {
           if (!alert.lat || !alert.lon) return
 
-          const color = SEVERITY_CONFIG[alert.severity].color
+          const color = SEVERITY_CONFIG[normalizeSeverity(alert.severity)]?.color ?? SEVERITY_CONFIG.INFO.color
 
           const iconHtml = `
             <div style="position: relative; width: 20px; height: 20px;">
