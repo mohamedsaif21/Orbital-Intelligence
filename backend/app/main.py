@@ -5,7 +5,7 @@ import os
 
 load_dotenv()
 
-from app.routes import detection, alerts, reports
+from app.routes import detection, alerts, reports, lands
 
 app = FastAPI(
     title="OrbitaGen API",
@@ -27,6 +27,7 @@ app.add_middleware(
 app.include_router(detection.router)
 app.include_router(alerts.router)
 app.include_router(reports.router)
+app.include_router(lands.router)
 
 
 @app.get("/")

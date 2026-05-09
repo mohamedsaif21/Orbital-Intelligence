@@ -1,8 +1,6 @@
-'use client'
 const NAV = [
   { id: 'dashboard', label: 'DASHBOARD',   icon: '⊞' },
-  { id: 'detection', label: 'DETECTION',    icon: '⊕' },
-  { id: 'maplayers', label: 'MAP LAYERS',  icon: '◈' },
+  { id: 'maplayers', label: 'MAP LAYERS',  icon: '◈' }, // ← this id triggers LandPanel
   { id: 'alertlog',  label: 'ALERT LOG',   icon: '⚠' },
   { id: 'analytics', label: 'ANALYTICS',   icon: '⩬' },
   { id: 'archived',  label: 'ARCHIVED',    icon: '◫' },
